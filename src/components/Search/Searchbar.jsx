@@ -1,47 +1,32 @@
-import React, { Component } from 'react';
-// import React from 'react';
+import React, { useState } from 'react';
 import { TbWorldSearch } from 'react-icons/tb';
 import { BtnSearch, FormSearch, Heder, InputSearch } from './Searchbar.styled';
 
-export class HederFormSearch extends Component {
-  state = {
-    word: '',
-  };
+export const HederFormSearch = props => {
+  const [word, setWord] = useState('');
 
-  handleSubmitWord = event => {
+  const handleSubmitWord = event => {
     event.preventDefault();
-    this.setState({
-      word: '',
-    });
-    // const choosedWord = event.currentTarget.elements.word.value;
-    const choosedWord = this.state.word;
-    this.props.findPhotos(choosedWord);
+    const choosedWord = word;
+    props.findPhotos(choosedWord);
+    setWord('');
   };
 
-  handleInputChange = event => {
-    this.setState({
-      // [event.target.name]: event.target.value,
-      word: event.target.value,
-    });
-  };
-  render() {
-    return (
-      <Heder>
-        <FormSearch onSubmit={this.handleSubmitWord}>
-          <InputSearch
-            name="word"
-            value={this.state.word}
-            type="text"
-            autoComplete="off"
-            autoFocus
-            placeholder="Search photos"
-            onChange={this.handleInputChange}
-          />
-          <BtnSearch type="submit">
-            <TbWorldSearch className="icon" />
-          </BtnSearch>
-        </FormSearch>
-      </Heder>
-    );
-  }
-}
+  return (
+    <Heder>
+      <FormSearch onSubmit={handleSubmitWord}>
+        <InputSearch
+          value={word}
+          type="text"
+          autoComplete="off"
+          autoFocus
+          placeholder="Search photos"
+          onChange={event => setWord(event.target.value)}
+        />
+        <BtnSearch type="submit">
+          <TbWorldSearch className="icon" />
+        </BtnSearch>
+      </FormSearch>
+    </Heder>
+  );
+};

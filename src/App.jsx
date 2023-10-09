@@ -1,106 +1,66 @@
 import { CreateGalleryFotos } from 'components/Gallery/ImageGallery';
 import { HederFormSearch } from 'components/Search/Searchbar';
-import { Component } from 'react';
+import { useEffect, useState } from 'react';
 import { fetchGallery } from './services/axios';
 import { ButtonLoadMore } from 'components/Button/ButtonLoadMore';
 import { Modal } from 'components/Modal/Modal';
 import { Loading } from 'components/Loader/Loader';
 
-export class App extends Component {
-  state = {
-    hits: null,
-    isLoading: false,
-    error: null,
-    word: '',
-    page: 1,
-    perPage: 12,
-    totalPage: 1,
-    modal: {
-      isOpen: false,
-      largeImageURL: null,
-    },
+export const App = () => {
+  const [hits, setHits] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [word, setWord] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPage, setTotalPage] = useState(1);
+  const [modal, setModal] = useState({ isOpen: false, largeImageURL: null });
+
+  const perPage = 12;
+
+  useEffect(() => {
+    if (!word) return;
+    const getGallery = async () => {
+      try {
+        setIsLoading(true);
+        const data = await fetchGallery(word, page);
+        setTotalPage(Math.ceil(data.totalHits / perPage));
+        setHits([...(hits ?? []), ...data.hits]);
+      } catch (error) {
+        error(error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    getGallery();
+  }, [word, page]);
+
+  const onPageIncrement = () => {
+    setPage(page + 1);
   };
 
-  getGallery = async () => {
-    try {
-      this.setState({ isLoading: true });
-      const data = await fetchGallery(this.state.word, this.state.page);
-      // console.log(data);
-      this.setState({
-        totalPage: Math.ceil(data.totalHits / this.state.perPage),
-      });
-      this.setState(prev => ({
-        hits: [...(prev.hits ?? []), ...data.hits],
-      }));
-    } catch (error) {
-      this.setState({ error: error.message });
-    } finally {
-      this.setState({ isLoading: false });
-    }
+  const onFindPhotos = choosedWord => {
+    setWord(choosedWord);
+    setPage(1);
+    setHits('');
   };
 
-  componentDidUpdate(_, prevState) {
-    if (
-      prevState.page !== this.state.page ||
-      prevState.word !== this.state.word
-    )
-      this.getGallery();
-
-    console.log(this.state.word);
-    console.log(this.state.page);
-    console.log(this.state.hits);
-  }
-
-  onPageIncrement = () => {
-    this.setState(prevState => {
-      return {
-        page: prevState.page + 1,
-      };
-    });
-  };
-
-  onFindPhotos = choosedWord => {
-    this.setState({ word: choosedWord, page: 1, hits: '' });
-  };
-
-  onOpenModal = newlargeImageURL => {
+  const onOpenModal = newlargeImageURL => {
     console.log(newlargeImageURL);
-    this.setState({
-      modal: {
-        isOpen: true,
-        largeImageURL: newlargeImageURL,
-      },
-    });
+    setModal({ isOpen: true, largeImageURL: newlargeImageURL });
   };
 
-  onCloseModal = () => {
-    this.setState({
-      modal: {
-        isOpen: false,
-        largeImageURL: null,
-      },
-    });
+  const onCloseModal = () => {
+    setModal({ isOpen: false, largeImageURL: null });
   };
 
-  render() {
-    return (
-      <div>
-        <HederFormSearch findPhotos={this.onFindPhotos} />
-        {this.state.isLoading && <Loading />}
-        <CreateGalleryFotos
-          hits={this.state.hits}
-          showModal={this.onOpenModal}
-        />
-        {this.state.page !== this.state.totalPage && (
-          <ButtonLoadMore nextPage={this.onPageIncrement} />
-        )}
-        {this.state.modal.isOpen && (
-          <Modal
-            open={this.state.modal.largeImageURL}
-            onClose={this.onCloseModal}
-          />
-        )}
-      </div>
-    );
-  }
-}
+  return (
+    <div>
+      <HederFormSearch findPhotos={onFindPhotos} />
+      {isLoading && <Loading />}
+      <CreateGalleryFotos hits={hits} showModal={onOpenModal} />
+      {page !== totalPage && <ButtonLoadMore nextPage={onPageIncrement} />}
+      {modal.isOpen && (
+        <Modal open={modal.largeImageURL} onClose={onCloseModal} />
+      )}
+    </div>
+  );
+};
