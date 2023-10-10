@@ -23,7 +23,7 @@ export const App = () => {
         setIsLoading(true);
         const data = await fetchGallery(word, page);
         setTotalPage(Math.ceil(data.totalHits / perPage));
-        setHits([...(hits ?? []), ...data.hits]);
+        setHits(prev => [...(prev.hits ?? []), ...data.hits]);
       } catch (error) {
         error(error.message);
       } finally {
@@ -31,7 +31,7 @@ export const App = () => {
       }
     };
     getGallery();
-  }, [word, page, hits]);
+  }, [word, page]);
 
   const onPageIncrement = () => {
     setPage(page + 1);
