@@ -39,3 +39,6 @@ export const ModalImg = styled.img`
   border-radius: 10px;
   object-fit: cover;
 `;
+export const Theme = styled.p`
+  font-size: 8px;
+`;
