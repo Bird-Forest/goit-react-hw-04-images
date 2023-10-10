@@ -31,7 +31,7 @@ export const App = () => {
       }
     };
     getGallery();
-  }, [word, page]);
+  }, [word, page, hits]);
 
   const onPageIncrement = () => {
     setPage(page + 1);
